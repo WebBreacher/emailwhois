@@ -18,7 +18,7 @@ import pythonwhois # http://cryto.net/pythonwhois/index.html
 # Pretend to be a normal web browser instead of "Python"
 # Large list of User Agents are http://techpatterns.com/downloads/firefox/useragentswitcher.xml
 user_agent = 'Mozilla/5.0 (compatible; Googlebot/2.1;  http://www.google.com/bot.html)'
-targetDomain = 'bah.com'
+targetDomain = 'nsa.gov'
 csv_output = {}
 pp = pprint.PrettyPrinter(indent=4)
 
