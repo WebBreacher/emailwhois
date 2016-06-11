@@ -2,6 +2,11 @@
 '''
     Author: Micah Hoffman (@WebBreacher)
     Purpose: To look up an email wildcard and find all domains reg'd with it
+    
+    TODO -
+        - Recursively look up domains found and print info
+        - Output to CSV/Excel
+        - Rotate UserAgents 
 '''
 
 # Tell python we want to use a library
