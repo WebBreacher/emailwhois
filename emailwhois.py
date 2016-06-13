@@ -4,7 +4,6 @@
     Purpose: To look up an email wildcard and find all domains reg'd with it
 
     TODO -
-        - Recursively look up domains found and print info
         - Output to CSV/Excel
         - Rotate UserAgents
 '''
@@ -40,7 +39,7 @@ args = parser.parse_args()
 url = 'http://viewdns.info/reversewhois/?q=%40' + args.domain
 req = urllib2.Request(url)
 req.add_header('User-Agent', user_agent)
-response = urllib2.urlopen(req, timeout=15)
+response = urllib2.urlopen(req, timeout=5)
 resp_data = response.read()
 
 
@@ -67,7 +66,7 @@ for line in data:
             # Some 'found' content fails specific whois. This is a false positive.
             print '[!]   ERROR: No valid Whois data for %s' % domains[1]
             continue
-        elif not re.findall(args.domain, w['raw'][0], flags=re.IGNORECASE):
+        elif not re.findall(args.domain, w['raw'][0], flags=re.IGNORECASE) and not re.findall(args.domain, w['raw'][1], flags=re.IGNORECASE):
             # Is the search domain actually in any of the output?
             print '[!]   ERROR: %s not found in %s' % (args.domain, domains[1])
             continue
