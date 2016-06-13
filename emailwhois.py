@@ -30,18 +30,22 @@ pp = pprint.PrettyPrinter(indent=4)
 # Parse command line input
 parser = argparse.ArgumentParser(description="To look up an email wildcard and find all domains reg'd with it")
 parser.add_argument('-d', '--domain', required=True, help='Single domain to search for (Ex: dhs.gov)')
+parser.add_argument('-o', '--outfile', default='domains_with_email.txt', help='Output file for all content')
 args = parser.parse_args()
 
 ####
 # Setting up and Making the Web Call
 ####
 # Create and make the call
-url = 'http://viewdns.info/reversewhois/?q=%40' + args.domain
-req = urllib2.Request(url)
-req.add_header('User-Agent', user_agent)
-response = urllib2.urlopen(req, timeout=5)
-resp_data = response.read()
-
+try:
+    url = 'http://viewdns.info/reversewhois/?q=%40' + args.domain
+    req = urllib2.Request(url)
+    req.add_header('User-Agent', user_agent)
+    response = urllib2.urlopen(req, timeout=5)
+    resp_data = response.read()
+except:
+    print '[!] ERROR - Cannot reach or parse data from the viewdns.info site.'
+    exit(1)
 
 ####
 # Matching and Extracting Content
@@ -50,6 +54,10 @@ resp_data = response.read()
 '''<tr><td>aberdeenweb.net</td><td>2008-07-17</td><td>FASTDOMAIN, INC.</td></tr>'''
 
 data = re.findall(r"<td>[a-z0-9].+?\..+?</td><td>[0-9\-]+?</td><td>[A-Z0-9].+?</td>", resp_data)
+
+# Open file for writing output
+outfile = open('domains_with_email.txt', 'a')
+
 for line in data:
     line = re.sub('</td>', '', line)
     domains = line.split('<td>')
@@ -58,35 +66,40 @@ for line in data:
     try:
         w = pythonwhois.get_whois(domains[1], normalized=True)
 
-        print '------------------------------------------------------------'
-        print 'DOM: %s --- CREATED: %s --- REGISTRAR: %s\n' % (domains[1],domains[2],domains[3])
-
         # Look for false positives in web output by doing search of whois results
         if re.match('NOT FOUND', w['raw'][0]):
             # Some 'found' content fails specific whois. This is a false positive.
-            print '[!]   ERROR: No valid Whois data for %s' % domains[1]
+            #print '[!]   ERROR: No valid Whois data for %s' % domains[1]
+            #outfile.write('[!]   ERROR: No valid Whois data for %s' % domains[1])
             continue
         elif not re.findall(args.domain, w['raw'][0], flags=re.IGNORECASE) and not re.findall(args.domain, w['raw'][1], flags=re.IGNORECASE):
             # Is the search domain actually in any of the output?
-            print '[!]   ERROR: %s not found in %s' % (args.domain, domains[1])
+            #print '[!]   ERROR: %s not found in %s' % (args.domain, domains[1])
+            #outfile.write('[!]   ERROR: %s not found in %s' % (args.domain, domains[1]))
+            continue
+        elif re.search('No match for ', w['raw'][0], flags=re.IGNORECASE):
+            # The Whois failed
+            continue
+        elif re.match('PSI-USA', w['registrar'], flags=re.IGNORECASE):
+            # This is the registrar Booz Allen uses and these will be false positives
             continue
         else:
-            # Print all the things
+            # Print all the things except the "raw" element
+            print '------------------------------------------------------------'
+            print 'DOM: %s --- CREATED: %s --- REGISTRAR: %s\n' % (domains[1],domains[2],domains[3])
+
+            outfile.write('------------------------------------------------------------')
+            outfile.write('DOM: %s --- CREATED: %s --- REGISTRAR: %s\n' % (domains[1],domains[2],domains[3]))
+
             del w['raw']
             pp.pprint(w)
+            outfile.write(w)
             #csv_output[domains[1]] = w
             #print csv_output[domains[1]]
     except KeyboardInterrupt:
-        # Sense if user presses ctrl-c
-        exit(0)
-    except:
+        # Sense and exit if user presses ctrl-c
+        continue
+    except Exception:
         pass
 
-'''# File Write for Output
-with open('domains_with_bah_email.csv', 'w') as csvfile:
-    fieldnames = ['Domain', 'last_name']
-    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-
-    writer.writeheader()
-    for row in csv_output:
-        writer.writerow(row)'''
+outfile.close()
