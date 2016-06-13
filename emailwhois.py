@@ -2,11 +2,11 @@
 '''
     Author: Micah Hoffman (@WebBreacher)
     Purpose: To look up an email wildcard and find all domains reg'd with it
-    
+
     TODO -
         - Recursively look up domains found and print info
         - Output to CSV/Excel
-        - Rotate UserAgents 
+        - Rotate UserAgents
 '''
 
 # Tell python we want to use a library
@@ -32,7 +32,6 @@ pp = pprint.PrettyPrinter(indent=4)
 parser = argparse.ArgumentParser(description="To look up an email wildcard and find all domains reg'd with it")
 parser.add_argument('-d', '--domain', required=True, help='Single domain to search for (Ex: dhs.gov)')
 args = parser.parse_args()
-
 
 ####
 # Setting up and Making the Web Call
@@ -61,20 +60,25 @@ for line in data:
         w = pythonwhois.get_whois(domains[1], normalized=True)
 
         print '------------------------------------------------------------'
-        print '%s, %s, %s' % (domains[1],domains[2],domains[3])
-        for response in w['raw']:
-            if re.match('NOT FOUND', response):
-                print '[!] ERRROR with %s' % domains[1]
-                continue
-            else:
-                print '\n'.join(['   %s: %s' % (key, value) for (key, value) in w['contacts']['admin'].items()]) 
-                print '     ------'
-                #print w['contacts']
-                
-                #pp.pprint(w)
-                #csv_output[domains[1]] = w
-                #print csv_output[domains[1]]
+        print 'DOM: %s --- CREATED: %s --- REGISTRAR: %s\n' % (domains[1],domains[2],domains[3])
+
+        # Look for false positives in web output by doing search of whois results
+        if re.match('NOT FOUND', w['raw'][0]):
+            # Some 'found' content fails specific whois. This is a false positive.
+            print '[!]   ERROR: No valid Whois data for %s' % domains[1]
+            continue
+        elif not re.findall(args.domain, w['raw'][0], flags=re.IGNORECASE):
+            # Is the search domain actually in any of the output?
+            print '[!]   ERROR: %s not found in %s' % (args.domain, domains[1])
+            continue
+        else:
+            # Print all the things
+            del w['raw']
+            pp.pprint(w)
+            #csv_output[domains[1]] = w
+            #print csv_output[domains[1]]
     except KeyboardInterrupt:
+        # Sense if user presses ctrl-c
         exit(0)
     except:
         pass
@@ -86,4 +90,4 @@ with open('domains_with_bah_email.csv', 'w') as csvfile:
 
     writer.writeheader()
     for row in csv_output:
-    	writer.writerow(row)'''
+        writer.writerow(row)'''
