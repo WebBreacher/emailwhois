@@ -4,13 +4,11 @@
     Purpose: To look up an email wildcard and find all domains reg'd with it
 
     TODO -
-        - Output to CSV/Excel
         - Rotate UserAgents
 '''
 
 # Tell python we want to use a library
 import argparse
-import csv
 from datetime import date
 import pprint
 import pythonwhois # http://cryto.net/pythonwhois/index.html
@@ -56,7 +54,7 @@ except:
 data = re.findall(r"<td>[a-z0-9].+?\..+?</td><td>[0-9\-]+?</td><td>[A-Z0-9].+?</td>", resp_data)
 
 # Open file for writing output
-outfile = open('domains_with_email.txt', 'a')
+outfile = open(args.outfile, 'a', 0)
 
 for line in data:
     line = re.sub('</td>', '', line)
@@ -66,39 +64,41 @@ for line in data:
     try:
         w = pythonwhois.get_whois(domains[1], normalized=True)
 
+        print "------------------------------------------------------------\n"
+        print " DOM: %s --- CREATED: %s --- REGISTRAR: %s\n" % (domains[1],domains[2],domains[3])
+
         # Look for false positives in web output by doing search of whois results
         if re.match('NOT FOUND', w['raw'][0]):
             # Some 'found' content fails specific whois. This is a false positive.
-            #print '[!]   ERROR: No valid Whois data for %s' % domains[1]
+            print '[!]   ERROR: No valid Whois data for %s' % domains[1]
             #outfile.write('[!]   ERROR: No valid Whois data for %s' % domains[1])
             continue
+
         elif not re.findall(args.domain, w['raw'][0], flags=re.IGNORECASE) and not re.findall(args.domain, w['raw'][1], flags=re.IGNORECASE):
             # Is the search domain actually in any of the output?
-            #print '[!]   ERROR: %s not found in %s' % (args.domain, domains[1])
+            print '[!]   ERROR: %s not found in %s' % (args.domain, domains[1])
             #outfile.write('[!]   ERROR: %s not found in %s' % (args.domain, domains[1]))
             continue
+
         elif re.search('No match for ', w['raw'][0], flags=re.IGNORECASE):
             # The Whois failed
+            print '[!]   ERROR: %s no match in Whois' % args.domain
             continue
-        elif re.match('PSI-USA', w['registrar'], flags=re.IGNORECASE):
-            # This is the registrar Booz Allen uses and these will be false positives
-            continue
+
         else:
             # Print all the things except the "raw" element
-            print '------------------------------------------------------------'
-            print 'DOM: %s --- CREATED: %s --- REGISTRAR: %s\n' % (domains[1],domains[2],domains[3])
-
-            outfile.write('------------------------------------------------------------')
-            outfile.write('DOM: %s --- CREATED: %s --- REGISTRAR: %s\n' % (domains[1],domains[2],domains[3]))
-
             del w['raw']
             pp.pprint(w)
-            outfile.write(w)
-            #csv_output[domains[1]] = w
-            #print csv_output[domains[1]]
+
+            # Output to outfile
+            outfile.write("------------------------------------------------------------\n")
+            outfile.write("DOM: %s --- CREATED: %s --- REGISTRAR: %s\n" % (domains[1],domains[2],domains[3]))
+            pprint.pprint(w, stream=outfile, indent=4)
+
     except KeyboardInterrupt:
-        # Sense and exit if user presses ctrl-c
+        # Sense and continue if user presses ctrl-c (used for times the script gets...er...stuck)
         continue
+
     except Exception:
         pass
 
