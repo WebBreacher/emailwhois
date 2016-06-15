@@ -203,7 +203,8 @@ elif args.infile:
         print '[!]   ERROR: Problem with the infile.'
         exit(1)
 
-    for line.strip() in infile_lines:
+    for line in infile_lines:
+        line = line.strip()
         print '[ ] Trying %s' % line
 
         if DomainVerification(line):
