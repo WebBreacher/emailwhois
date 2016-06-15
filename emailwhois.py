@@ -94,8 +94,8 @@ def GetDataFromViewDNS(passed_domain):
         response = urllib2.urlopen(req, timeout=5)
         resp_data = response.read()
         return resp_data
-    except:
-        print '[!] ERROR - Cannot reach or parse data from the viewdns.info site.'
+    except Exception:
+        print '[!]   ERROR - Cannot reach or parse data from the viewdns.info site.'
         exit(1)
 
 def MatchAndExtractFromViewDNS(resp_data):
