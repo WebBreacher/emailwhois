@@ -94,20 +94,18 @@ def GetDataFromViewDNS(passed_domain):
 
         response = urllib2.urlopen(req, timeout=5)
         resp_data = response.read()
-        return resp_data
+
+        ####
+        # Matching and Extracting Content
+        ####
+        # Format of the viewdns.info data as of 2016-06-10
+        '''<tr><td>aberdeenweb.net</td><td>2008-07-17</td><td>FASTDOMAIN, INC.</td></tr>'''
+        data = re.findall(r"<td>[a-z0-9].+?\..+?</td><td>[0-9\-]+?</td><td>[A-Z0-9].+?</td>", resp_data)
+        return data
 
     except Exception:
         print '[!]   ERROR - Cannot reach or parse data from the viewdns.info site.'
         exit(1)
-
-def MatchAndExtractFromViewDNS(resp_data):
-    ####
-    # Matching and Extracting Content
-    ####
-    # Format of the viewdns.info data as of 2016-06-10
-    '''<tr><td>aberdeenweb.net</td><td>2008-07-17</td><td>FASTDOMAIN, INC.</td></tr>'''
-    data = re.findall(r"<td>[a-z0-9].+?\..+?</td><td>[0-9\-]+?</td><td>[A-Z0-9].+?</td>", resp_data)
-    return data
 
 def IndividualWhoisLookups(domains):
     for line in data:
@@ -182,15 +180,14 @@ if args.domain:
     if DomainVerification(args.domain):
         print '[ ] Validated that %s looks like a domain. Well done.' % args.domain
         resp_data = GetDataFromViewDNS(args.domain)
-        domains = MatchAndExtractFromViewDNS(resp_data)
 
         if args.whois:
             # Do the whois lookup and then output
             print '[ ] Doing the additional WHOIS look ups on the found domains per the -w switch'
-            IndividualWhoisLookups(domains)
+            IndividualWhoisLookups(resp_data)
         else:
             # Just output the scraped domains
-            OutputScrapedDomsFromViewDNS(args.domain, domains)
+            OutputScrapedDomsFromViewDNS(args.domain, resp_data)
     else:
         print '[!]   ERROR: The value you passed (%s) did not validate as a domain.' % args.domain
         exit(1)
@@ -210,15 +207,14 @@ elif args.infile:
         if DomainVerification(line):
             print '[ ] Validated that %s looks like a domain. Well done.' % line
             resp_data = GetDataFromViewDNS(line)
-            domains = MatchAndExtractFromViewDNS(resp_data)
 
             if args.whois:
                 # Do the whois lookup and then output
                 print '[ ] Doing the additional WHOIS look ups on the found domains per the -w switch'
-                IndividualWhoisLookups(domains)
+                IndividualWhoisLookups(resp_data)
             else:
                 # Just output the scraped domains
-                OutputScrapedDomsFromViewDNS(line, domains)
+                OutputScrapedDomsFromViewDNS(line, resp_data)
 
         else:
             print '[!]   ERROR: The value you passed (%s) did not validate as a domain.' % args.domain
