@@ -218,6 +218,7 @@ elif args.infile:
             else:
                 # Just output the scraped domains
                 OutputScrapedDomsFromViewDNS(line, resp_data)
+                outfile.write('-----------------------------------------------------------\n')
 
         else:
             print '[!]   ERROR: The value you passed (%s) did not validate as a domain.' % args.domain
