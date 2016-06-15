@@ -65,7 +65,7 @@ pp = pprint.PrettyPrinter(indent=4)
 
 # Parse command line input
 parser = argparse.ArgumentParser(description="To look up an email wildcard and find all domains reg'd with it")
-parser.add_argument('-d', '--domain', required=True, help='Single domain to search for (Ex: dhs.gov) or use the -i [file]')
+parser.add_argument('-d', '--domain', help='Single domain to search for (Ex: dhs.gov) or use the -i [file]')
 parser.add_argument('-i', '--infile', help='[OPTIONAL] Input file for all content. Just a list of domains (Ex. dhs.gov)')
 parser.add_argument('-o', '--outfile', default='domains_with_email.txt', help='[OPTIONAL] Output file for all content')
 parser.add_argument('-w', '--whois', help='[OPTIONAL] For each domain retrieved from ViewDNS.info, do a whois [domain]')
