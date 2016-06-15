@@ -101,8 +101,6 @@ def GetDataFromViewDNS(passed_domain):
         # Format of the viewdns.info data as of 2016-06-10
         '''<tr><td>aberdeenweb.net</td><td>2008-07-17</td><td>FASTDOMAIN, INC.</td></tr>'''
         data = re.findall(r"<td>[a-z0-9].+?\..+?</td><td>[0-9\-]+?</td><td>[A-Z0-9].+?</td>", resp_data)
-        print data
-        exit(0)
         return data
 
     except Exception:
@@ -156,9 +154,11 @@ def IndividualWhoisLookups(domains):
         except Exception:
             pass
 
-def OutputScrapedDomsFromViewDNS(domain, domains):
+def OutputScrapedDomsFromViewDNS(domain, responses):
     outfile.write("Domain Searched: %s\n" % domain)
-    for domain in domains:
+    for domain in responses:
+        domain = re.sub('</td>', '', domain)
+        domains = domain.split('<td>')
         outfile.write("DOM: %s, CREATED: %s, REGISTRAR: %s\n" % (domains[1], domains[2], domains[3]))
 
 
