@@ -160,6 +160,7 @@ def OutputScrapedDomsFromViewDNS(domain, responses):
         domain = re.sub('</td>', '', domain)
         domains = domain.split('<td>')
         outfile.write('%s | %s | %s\n' % (domains[1], domains[2], domains[3]))
+        outfile.write("-----------------------------------------------------------\n")
 
 
 # Open file for writing output
@@ -218,11 +219,13 @@ elif args.infile:
             else:
                 # Just output the scraped domains
                 OutputScrapedDomsFromViewDNS(line, resp_data)
-                outfile.write('-----------------------------------------------------------\n')
 
         else:
             print '[!]   ERROR: The value you passed (%s) did not validate as a domain.' % args.domain
             continue
+
+    infile.close()
+
 else:
     print '[!]   ERROR: You need to either use -d or -i to pass in domains.'
     exit(1)
