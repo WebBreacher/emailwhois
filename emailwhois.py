@@ -107,50 +107,50 @@ def MatchAndExtractFromViewDNS(resp_data):
 
 def IndividualWhoisLookups(domains):
     for line in data:
-    line = re.sub('</td>', '', line)
-    domains = line.split('<td>')
+        line = re.sub('</td>', '', line)
+        domains = line.split('<td>')
 
-    # Make a whois lookup of the domain and pull out the email@dhs.gov
-    try:
-        w = pythonwhois.get_whois(domains[1], normalized=True)
+        # Make a whois lookup of the domain and pull out the email@dhs.gov
+        try:
+            w = pythonwhois.get_whois(domains[1], normalized=True)
 
-        print "------------------------------------------------------------\n"
-        print " DOM: %s --- CREATED: %s --- REGISTRAR: %s\n" % (domains[1],domains[2],domains[3])
+            print "------------------------------------------------------------\n"
+            print " DOM: %s --- CREATED: %s --- REGISTRAR: %s\n" % (domains[1],domains[2],domains[3])
 
-        # Look for false positives in web output by doing search of whois results
-        if re.match('NOT FOUND', w['raw'][0]):
-            # Some 'found' content fails specific whois. This is a false positive.
-            print '[!]   ERROR: No valid Whois data for %s' % domains[1]
-            #outfile.write('[!]   ERROR: No valid Whois data for %s' % domains[1])
+            # Look for false positives in web output by doing search of whois results
+            if re.match('NOT FOUND', w['raw'][0]):
+                # Some 'found' content fails specific whois. This is a false positive.
+                print '[!]   ERROR: No valid Whois data for %s' % domains[1]
+                #outfile.write('[!]   ERROR: No valid Whois data for %s' % domains[1])
+                continue
+
+            elif not re.findall(args.domain, w['raw'][0], flags=re.IGNORECASE) and not re.findall(args.domain, w['raw'][1], flags=re.IGNORECASE):
+                # Is the search domain actually in any of the output?
+                print '[!]   ERROR: %s not found in %s' % (args.domain, domains[1])
+                #outfile.write('[!]   ERROR: %s not found in %s' % (args.domain, domains[1]))
+                continue
+
+            elif re.search('No match for ', w['raw'][0], flags=re.IGNORECASE):
+                # The Whois failed
+                print '[!]   ERROR: %s no match in Whois' % args.domain
+                continue
+
+            else:
+                # Print all the things except the "raw" element
+                del w['raw']
+                pp.pprint(w)
+
+                # Output to outfile
+                outfile.write("------------------------------------------------------------\n")
+                outfile.write("DOM: %s --- CREATED: %s --- REGISTRAR: %s\n" % (domains[1],domains[2],domains[3]))
+                pprint.pprint(w, stream=outfile, indent=4)
+
+        except KeyboardInterrupt:
+            # Sense and continue if user presses ctrl-c (used for times the script gets...er...stuck)
             continue
 
-        elif not re.findall(args.domain, w['raw'][0], flags=re.IGNORECASE) and not re.findall(args.domain, w['raw'][1], flags=re.IGNORECASE):
-            # Is the search domain actually in any of the output?
-            print '[!]   ERROR: %s not found in %s' % (args.domain, domains[1])
-            #outfile.write('[!]   ERROR: %s not found in %s' % (args.domain, domains[1]))
-            continue
-
-        elif re.search('No match for ', w['raw'][0], flags=re.IGNORECASE):
-            # The Whois failed
-            print '[!]   ERROR: %s no match in Whois' % args.domain
-            continue
-
-        else:
-            # Print all the things except the "raw" element
-            del w['raw']
-            pp.pprint(w)
-
-            # Output to outfile
-            outfile.write("------------------------------------------------------------\n")
-            outfile.write("DOM: %s --- CREATED: %s --- REGISTRAR: %s\n" % (domains[1],domains[2],domains[3]))
-            pprint.pprint(w, stream=outfile, indent=4)
-
-    except KeyboardInterrupt:
-        # Sense and continue if user presses ctrl-c (used for times the script gets...er...stuck)
-        continue
-
-    except Exception:
-        pass
+        except Exception:
+            pass
 
 def OutputScrapedDomsFromViewDNS(domains):
     for domain in domains:
