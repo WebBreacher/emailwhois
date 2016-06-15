@@ -191,8 +191,9 @@ if args.domain:
 
 elif args.infile:
     for line in args.infile:
-        if DomainVerification(args.domain):
-            resp_data = GetDataFromViewDNS(args.domain)
+        print '[ ]  Trying %s' % line
+        if DomainVerification(line):
+            resp_data = GetDataFromViewDNS(line)
             domains = MatchAndExtractFromViewDNS(resp_data)
 
             if args.whois:
