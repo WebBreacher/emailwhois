@@ -144,7 +144,7 @@ def IndividualWhoisLookups(domains):
 
                 # Output to outfile
                 outfile.write("------------------------------------------------------------\n")
-                outfile.write("DOM: %s, CREATED: %s, REGISTRAR: %s\n" % (domains[1], domains[2], domains[3]))
+                outfile.write('%s, %s, %s\n' % (domains[1], domains[2], domains[3]))
                 pprint.pprint(w, stream=outfile, indent=4)
 
         except KeyboardInterrupt:
@@ -159,7 +159,7 @@ def OutputScrapedDomsFromViewDNS(domain, responses):
     for domain in responses:
         domain = re.sub('</td>', '', domain)
         domains = domain.split('<td>')
-        outfile.write("DOM: %s, CREATED: %s, REGISTRAR: %s\n" % (domains[1], domains[2], domains[3]))
+        outfile.write('%s, %s, %s\n' % (domains[1], domains[2], domains[3]))
 
 
 # Open file for writing output
