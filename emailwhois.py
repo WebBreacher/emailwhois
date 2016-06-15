@@ -146,7 +146,7 @@ def IndividualWhoisLookups(domains):
 
                 # Output to outfile
                 outfile.write("------------------------------------------------------------\n")
-                outfile.write("DOM: %s --- CREATED: %s --- REGISTRAR: %s\n" % (domains[1],domains[2],domains[3]))
+                outfile.write("DOM: %s, CREATED: %s, REGISTRAR: %s\n" % (domains[1], domains[2], domains[3]))
                 pprint.pprint(w, stream=outfile, indent=4)
 
         except KeyboardInterrupt:
@@ -156,10 +156,10 @@ def IndividualWhoisLookups(domains):
         except Exception:
             pass
 
-def OutputScrapedDomsFromViewDNS(domains):
+def OutputScrapedDomsFromViewDNS(domain, domains):
+    outfile.write("Domain Searched: %s\n" % domain)
     for domain in domains:
-        outfile.write("------------------------------------------------------------\n")
-        outfile.write("DOM: %s --- CREATED: %s --- REGISTRAR: %s\n" % (domains[1],domains[2],domains[3]))
+        outfile.write("DOM: %s, CREATED: %s, REGISTRAR: %s\n" % (domains[1], domains[2], domains[3]))
 
 
 # Open file for writing output
@@ -186,10 +186,11 @@ if args.domain:
 
         if args.whois:
             # Do the whois lookup and then output
+            print '[ ] Doing the additional WHOIS look ups on the found domains per the -w switch'
             IndividualWhoisLookups(domains)
         else:
             # Just output the scraped domains
-            OutputScrapedDomsFromViewDNS(domains)
+            OutputScrapedDomsFromViewDNS(args.domain, domains)
     else:
         print '[!]   ERROR: The value you passed (%s) did not validate as a domain.' % args.domain
         exit(1)
@@ -213,10 +214,11 @@ elif args.infile:
 
             if args.whois:
                 # Do the whois lookup and then output
+                print '[ ] Doing the additional WHOIS look ups on the found domains per the -w switch'
                 IndividualWhoisLookups(domains)
             else:
                 # Just output the scraped domains
-                OutputScrapedDomsFromViewDNS(domains)
+                OutputScrapedDomsFromViewDNS(line, domains)
 
         else:
             print '[!]   ERROR: The value you passed (%s) did not validate as a domain.' % args.domain
