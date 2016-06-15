@@ -190,7 +190,7 @@ if args.domain:
         exit(1)
 
 elif args.infile:
-    for line in infile:
+    for line in args.infile:
         if DomainVerification(args.domain):
             resp_data = GetDataFromViewDNS(args.domain)
             domains = MatchAndExtractFromViewDNS(resp_data)
