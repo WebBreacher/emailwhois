@@ -88,10 +88,10 @@ def GetDataFromViewDNS(passed_domain):
     try:
         url = 'http://viewdns.info/reversewhois/?q=%40' + passed_domain
         req = urllib2.Request(url)
-        chosen_agent = random.choice(user_agent)
+        chosen_agent = random.choice(user_agents)
         print '[ ] Using User-Agent: %s' % chosen_agent
         req.add_header('User-Agent', chosen_agent)
-        
+
         response = urllib2.urlopen(req, timeout=5)
         resp_data = response.read()
         return resp_data
@@ -177,7 +177,10 @@ if args.domain:
         exit(1)
     
     # OK, we have a single domain. Let's make sure it IS a domain
+    print '[ ] Trying %s' % args.domain
+
     if DomainVerification(args.domain):
+        print '[ ] Validated that %s looks like a domain. Well done.' % args.domain
         resp_data = GetDataFromViewDNS(args.domain)
         domains = MatchAndExtractFromViewDNS(resp_data)
 
@@ -201,10 +204,10 @@ elif args.infile:
         exit(1)
 
     for line in infile_lines:
-        print '[ ]  Trying %s' % line
+        print '[ ] Trying %s' % line
 
         if DomainVerification(line):
-            print '[ ]  Validated that %s looks like a domain. Well done.' % line
+            print '[ ] Validated that %s looks like a domain. Well done.' % line
             resp_data = GetDataFromViewDNS(line)
             domains = MatchAndExtractFromViewDNS(resp_data)
 
