@@ -89,11 +89,13 @@ def GetDataFromViewDNS(passed_domain):
         url = 'http://viewdns.info/reversewhois/?q=%40' + passed_domain
         req = urllib2.Request(url)
         chosen_agent = random.choice(user_agent)
-        req.add_header('User-Agent', chosen_agent)
         print '[ ] Using User-Agent: %s' % chosen_agent
+        req.add_header('User-Agent', chosen_agent)
+        
         response = urllib2.urlopen(req, timeout=5)
         resp_data = response.read()
         return resp_data
+
     except Exception:
         print '[!]   ERROR - Cannot reach or parse data from the viewdns.info site.'
         exit(1)
@@ -202,6 +204,7 @@ elif args.infile:
         print '[ ]  Trying %s' % line
 
         if DomainVerification(line):
+            print '[ ]  Validated that %s looks like a domain. Well done.' % line
             resp_data = GetDataFromViewDNS(line)
             domains = MatchAndExtractFromViewDNS(resp_data)
 
