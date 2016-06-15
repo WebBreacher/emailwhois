@@ -197,8 +197,9 @@ elif args.infile:
         print '[!]   ERROR: Problem with the infile.'
         exit(1)
 
-    for line in infile.read():
+    for line in infile.readline():
         print '[ ]  Trying %s' % line
+        
         if DomainVerification(line):
             resp_data = GetDataFromViewDNS(line)
             domains = MatchAndExtractFromViewDNS(resp_data)
