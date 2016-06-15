@@ -193,13 +193,14 @@ elif args.infile:
     # Open file for reading input
     try:
         infile = open(args.infile, 'r')
+        infile_lines = infile.readlines()
     except Exception:
         print '[!]   ERROR: Problem with the infile.'
         exit(1)
 
-    for line in infile.readline():
+    for line in infile_lines:
         print '[ ]  Trying %s' % line
-        
+
         if DomainVerification(line):
             resp_data = GetDataFromViewDNS(line)
             domains = MatchAndExtractFromViewDNS(resp_data)
