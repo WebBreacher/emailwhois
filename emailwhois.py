@@ -27,36 +27,48 @@ pp = pprint.PrettyPrinter(indent=4)
 
 # Parse command line input
 parser = argparse.ArgumentParser(description="To look up an email wildcard and find all domains reg'd with it")
-parser.add_argument('-d', '--domain', required=True, help='Single domain to search for (Ex: dhs.gov)')
-parser.add_argument('-o', '--outfile', default='domains_with_email.txt', help='Output file for all content')
+parser.add_argument('-d', '--domain', required=True, help='Single domain to search for (Ex: dhs.gov) or use the -i [file]')
+parser.add_argument('-i', '--infile', help='[OPTIONAL] Input file for all content. Just a list of domains (Ex. dhs.gov)')
+parser.add_argument('-o', '--outfile', default='domains_with_email.txt', help='[OPTIONAL] Output file for all content')
+parser.add_argument('-w', '--whois', help='[OPTIONAL] For each domain retrieved from ViewDNS.info, do a whois [domain]')
 args = parser.parse_args()
 
-####
-# Setting up and Making the Web Call
-####
-# Create and make the call
-try:
-    url = 'http://viewdns.info/reversewhois/?q=%40' + args.domain
-    req = urllib2.Request(url)
-    req.add_header('User-Agent', user_agent)
-    response = urllib2.urlopen(req, timeout=5)
-    resp_data = response.read()
-except:
-    print '[!] ERROR - Cannot reach or parse data from the viewdns.info site.'
-    exit(1)
+def DomainVerification(passed_domain):
+    # Use some kind of regex to verify a domain
+    # Regex copied from https://www.safaribooksonline.com/library/view/regular-expressions-cookbook/9781449327453/ch08s15.html
+    if re.match('((?=[a-z0-9-]{1,63}\.)[a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,63}', passed_domain):
+        return True
+    else:
+        return False
 
-####
-# Matching and Extracting Content
-####
-# Format of the viewdns.info data as of 2016-06-10
-'''<tr><td>aberdeenweb.net</td><td>2008-07-17</td><td>FASTDOMAIN, INC.</td></tr>'''
 
-data = re.findall(r"<td>[a-z0-9].+?\..+?</td><td>[0-9\-]+?</td><td>[A-Z0-9].+?</td>", resp_data)
+def GetDataFromViewDNS(passed_domain):
+    ####
+    # Setting up and Making the Web Call
+    ####
+    # Create and make the call
+    try:
+        url = 'http://viewdns.info/reversewhois/?q=%40' + args.domain
+        req = urllib2.Request(url)
+        req.add_header('User-Agent', user_agent)
+        response = urllib2.urlopen(req, timeout=5)
+        resp_data = response.read()
+        return resp_data
+    except:
+        print '[!] ERROR - Cannot reach or parse data from the viewdns.info site.'
+        exit(1)
 
-# Open file for writing output
-outfile = open(args.outfile, 'a', 0)
+def MatchAndExtractFromViewDNS(resp_data):
+    ####
+    # Matching and Extracting Content
+    ####
+    # Format of the viewdns.info data as of 2016-06-10
+    '''<tr><td>aberdeenweb.net</td><td>2008-07-17</td><td>FASTDOMAIN, INC.</td></tr>'''
+    data = re.findall(r"<td>[a-z0-9].+?\..+?</td><td>[0-9\-]+?</td><td>[A-Z0-9].+?</td>", resp_data)
+    return data
 
-for line in data:
+def IndividualWhoisLookups(domains):
+    for line in data:
     line = re.sub('</td>', '', line)
     domains = line.split('<td>')
 
@@ -101,5 +113,35 @@ for line in data:
 
     except Exception:
         pass
+
+'''
+if -d is passed
+    verify that it is a domain
+    do the viewdns lookup 
+    do the match and extract
+    if -w is passed
+        do additional lookups
+'''
+
+
+# Open file for writing output
+try:
+    outfile = open(args.outfile, 'a', 0)
+except Exception:
+    print '[!]   ERROR: Problem with the outfile.'
+    exit(1)
+
+if args.domain:
+    if args.infile:
+        print '[!]   ERROR: Please only pass -d OR -i'
+        exit(1)
+        
+    if DomainVerification(args.domain):
+        resp_data = GetDataFromViewDNS(args.domain)
+        domains = MatchAndExtractFromViewDNS(resp_data)
+
+    else:
+        print '[!]   ERROR: The value you passed (%s) did not validate as a domain.' % args.domain
+        exit(1)
 
 outfile.close()
