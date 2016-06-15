@@ -89,17 +89,19 @@ def GetDataFromViewDNS(passed_domain):
         url = 'http://viewdns.info/reversewhois/?q=%40' + passed_domain
         req = urllib2.Request(url)
         chosen_agent = random.choice(user_agents)
+        print '[ ] Calling to %s' % url
         print '[ ] Using User-Agent: %s' % chosen_agent
         req.add_header('User-Agent', chosen_agent)
 
-        response = urllib2.urlopen(req, timeout=5)
+        response = urllib2.urlopen(req, timeout=15)
         resp_data = response.read()
-
+        print '[+] Response from ViewDNS.info received'
         ####
         # Matching and Extracting Content
         ####
         # Format of the viewdns.info data as of 2016-06-10
         '''<tr><td>aberdeenweb.net</td><td>2008-07-17</td><td>FASTDOMAIN, INC.</td></tr>'''
+        print '[ ] Parsing the response'
         data = re.findall(r"<td>[a-z0-9].+?\..+?</td><td>[0-9\-]+?</td><td>[A-Z0-9].+?</td>", resp_data)
         return data
 
@@ -117,7 +119,7 @@ def IndividualWhoisLookups(domains):
             w = pythonwhois.get_whois(domains[1], normalized=True)
 
             print "------------------------------------------------------------\n"
-            print " DOM: %s --- CREATED: %s --- REGISTRAR: %s\n" % (domains[1],domains[2],domains[3])
+            print "%s | %s | %s\n" % (domains[1],domains[2],domains[3])
 
             # Look for false positives in web output by doing search of whois results
             if re.match('NOT FOUND', w['raw'][0]):
@@ -178,7 +180,7 @@ if args.domain:
         exit(1)
     
     # OK, we have a single domain. Let's make sure it IS a domain
-    print '[ ] Trying %s' % args.domain
+    print '[+] Trying %s' % args.domain
 
     if DomainVerification(args.domain):
         print '[ ] Validated that %s looks like a domain. Well done.' % args.domain
