@@ -190,7 +190,14 @@ if args.domain:
         exit(1)
 
 elif args.infile:
-    for line in args.infile:
+    # Open file for reading input
+    try:
+        infile = open(args.infile, 'r')
+    except Exception:
+        print '[!]   ERROR: Problem with the infile.'
+        exit(1)
+
+    for line in infile.read():
         print '[ ]  Trying %s' % line
         if DomainVerification(line):
             resp_data = GetDataFromViewDNS(line)
