@@ -4,7 +4,7 @@
     Purpose: To look up an email wildcard and find all domains reg'd with it
 
     TODO -
-        - Rotate UserAgents
+
 '''
 
 # Tell python we want to use a library
@@ -12,6 +12,7 @@ import argparse
 from datetime import date
 import pprint
 import pythonwhois # http://cryto.net/pythonwhois/index.html
+import random
 import re
 import sys
 import urllib2
@@ -84,11 +85,12 @@ def GetDataFromViewDNS(passed_domain):
     ####
     # Setting up and Making the Web Call
     ####
-    # Create and make the call
     try:
-        url = 'http://viewdns.info/reversewhois/?q=%40' + args.domain
+        url = 'http://viewdns.info/reversewhois/?q=%40' + passed_domain
         req = urllib2.Request(url)
-        req.add_header('User-Agent', user_agent)
+        chosen_agent = random.choice(user_agent)
+        req.add_header('User-Agent', chosen_agent)
+        print '[ ] Using User-Agent: %s' % chosen_agent
         response = urllib2.urlopen(req, timeout=5)
         resp_data = response.read()
         return resp_data
