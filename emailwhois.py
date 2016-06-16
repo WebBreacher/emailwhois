@@ -15,6 +15,7 @@ import pythonwhois # http://cryto.net/pythonwhois/index.html
 import random
 import re
 import sys
+import time
 import urllib2
 
 ####
@@ -110,9 +111,9 @@ def GetDataFromViewDNS(passed_domain):
         exit(1)
 
 def IndividualWhoisLookups(domains):
-    print '[ ] Starting individual domain lookups in 5 seconds'
+    print '[ ] Starting individual domain lookups in 10 seconds'
     print '[*]    If the output "hangs" on a lookup, press CTRL-C to go to next entry'
-    sleep(5)
+    time.sleep(10)
     for line in domains:
         line = re.sub('</td>', '', line)
         domains = line.split('<td>')
@@ -149,8 +150,8 @@ def IndividualWhoisLookups(domains):
 
                 # Output to outfile
                 if args.outfile:
-                    outfile.write('------------------------------------------------------------')
-                    outfile.write('"%s","%s","%s"\n' % (domains[1], domains[2], domains[3]))
+                    outfile.write('------------------------------------------------------------\n')
+                    outfile.write('Domain: %s, Registered on: %s, Registrar: %s\n' % (domains[1], domains[2], domains[3]))
                     pprint.pprint(w, stream=outfile, indent=4)
 
         except KeyboardInterrupt:
