@@ -129,18 +129,19 @@ def IndividualWhoisLookups(domains):
             if re.match('NOT FOUND', w['raw'][0]):
                 # Some 'found' content fails specific whois. This is a false positive.
                 print '[!]   ERROR: No valid Whois data for %s' % domains[1]
-                #outfile.write('[!]   ERROR: No valid Whois data for %s' % domains[1])
+                outfile.write('[!]   ERROR: No valid Whois data for %s' % domains[1])
                 continue
 
             elif not re.findall(args.domain, w['raw'][0], flags=re.IGNORECASE) and not re.findall(args.domain, w['raw'][1], flags=re.IGNORECASE):
                 # Is the search domain actually in any of the output?
                 print '[!]   ERROR: %s not found in %s' % (args.domain, domains[1])
-                #outfile.write('[!]   ERROR: %s not found in %s' % (args.domain, domains[1]))
+                outfile.write('[!]   ERROR: %s not found in %s' % (args.domain, domains[1]))
                 continue
 
             elif re.search('No match for ', w['raw'][0], flags=re.IGNORECASE):
                 # The Whois failed
                 print '[!]   ERROR: %s no match in Whois' % args.domain
+                outfile.write('[!]   ERROR: %s no match in Whois' % args.domain)
                 continue
 
             else:
@@ -173,6 +174,9 @@ def OutputScrapedDomsFromViewDNS(domain, responses):
         if args.outfile:
             outfile.write('"%s","%s","%s"\n' % (domains[1], domains[2], domains[3]))
 
+####
+# Main Script
+####
 
 # Open file for writing output
 if args.outfile:
@@ -186,7 +190,7 @@ if args.outfile:
 if args.domain:
     if args.infile:
         # If they passed both -d and -i, exit.
-        print '[!]   ERROR: Please only pass -d OR -i'
+        print '[!]   ERROR: Please only pass -d OR -i...not both.'
         exit(1)
 
     # OK, we have a single domain. Let's make sure it IS a domain
