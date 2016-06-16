@@ -160,7 +160,8 @@ def IndividualWhoisLookups(domains):
 def OutputScrapedDomsFromViewDNS(domain, responses):
     print "[+] Domain Searched: %s" % domain
     if args.outfile:
-        outfile.write("Domain Searched: %s" % domain)
+        outfile.write("[+] Domain Searched: %s\n" % domain)
+        outfile.write('"Domain","Date Creation","Registrar"\n')
     for domain in responses:
         domain = re.sub('</td>', '', domain)
         domains = domain.split('<td>')
