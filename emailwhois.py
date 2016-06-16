@@ -68,7 +68,7 @@ pp = pprint.PrettyPrinter(indent=4)
 parser = argparse.ArgumentParser(description="To look up an email wildcard and find all domains reg'd with it")
 parser.add_argument('-d', '--domain', help='Single domain to search for (Ex: dhs.gov) or use the -i [file]')
 parser.add_argument('-i', '--infile', help='[OPTIONAL] Input file for all content. Just a list of domains (Ex. dhs.gov)')
-parser.add_argument('-o', '--outfile', default='domains_with_email.txt', help='[OPTIONAL] Output file for all content')
+parser.add_argument('-o', '--outfile', help='[OPTIONAL] Output file for all content')
 parser.add_argument('-w', '--whois', help='[OPTIONAL] For each domain retrieved from ViewDNS.info, do a whois [domain]')
 args = parser.parse_args()
 
@@ -119,7 +119,7 @@ def IndividualWhoisLookups(domains):
             w = pythonwhois.get_whois(domains[1], normalized=True)
 
             print "------------------------------------------------------------\n"
-            print "%s | %s | %s\n" % (domains[1],domains[2],domains[3])
+            print '"%s","%s","%s"\n' % (domains[1],domains[2],domains[3])
 
             # Look for false positives in web output by doing search of whois results
             if re.match('NOT FOUND', w['raw'][0]):
@@ -145,9 +145,10 @@ def IndividualWhoisLookups(domains):
                 pp.pprint(w)
 
                 # Output to outfile
-                outfile.write("------------------------------------------------------------\n")
-                outfile.write('%s | %s | %s\n' % (domains[1], domains[2], domains[3]))
-                pprint.pprint(w, stream=outfile, indent=4)
+                if args.outfile:
+                    outfile.write("------------------------------------------------------------\n")
+                    outfile.write('"%s","%s","%s"\n' % (domains[1], domains[2], domains[3]))
+                    pprint.pprint(w, stream=outfile, indent=4)
 
         except KeyboardInterrupt:
             # Sense and continue if user presses ctrl-c (used for times the script gets...er...stuck)
@@ -157,20 +158,24 @@ def IndividualWhoisLookups(domains):
             pass
 
 def OutputScrapedDomsFromViewDNS(domain, responses):
-    outfile.write("Domain Searched: %s\n" % domain)
+    print "[+] Domain Searched: %s" % domain
+    if args.outfile:
+        outfile.write("Domain Searched: %s" % domain)
     for domain in responses:
         domain = re.sub('</td>', '', domain)
         domains = domain.split('<td>')
-        outfile.write('%s | %s | %s\n' % (domains[1], domains[2], domains[3]))
-        outfile.write("-----------------------------------------------------------\n")
+        print '"%s","%s","%s"' % (domains[1], domains[2], domains[3])
+        if args.outfile:
+            outfile.write('"%s","%s","%s"\n' % (domains[1], domains[2], domains[3]))
 
 
 # Open file for writing output
-try:
-    outfile = open(args.outfile, 'a', 0)
-except Exception:
-    print '[!]   ERROR: Problem with the outfile.'
-    exit(1)
+if args.outfile:
+    try:
+        outfile = open(args.outfile, 'a', 0)
+    except Exception:
+        print '[!]   ERROR: Problem with the outfile.'
+        exit(1)
 
 # Main part of the script
 if args.domain:
@@ -178,7 +183,7 @@ if args.domain:
         # If they passed both -d and -i, exit.
         print '[!]   ERROR: Please only pass -d OR -i'
         exit(1)
-    
+
     # OK, we have a single domain. Let's make sure it IS a domain
     print '[+] Trying %s' % args.domain
 
@@ -232,4 +237,5 @@ else:
     print '[!]   ERROR: You need to either use -d or -i to pass in domains.'
     exit(1)
 
-outfile.close()
+if args.outfile:
+    outfile.close()
