@@ -4,7 +4,7 @@
     Purpose: To look up an email wildcard and find all domains reg'd with it
 
     TODO -
-
+        1 - Parse the number of responses from the site. If > 500 note this is not complete list
 '''
 
 # Tell python we want to use a library
@@ -69,7 +69,7 @@ parser = argparse.ArgumentParser(description="To look up an email wildcard and f
 parser.add_argument('-d', '--domain', help='Single domain to search for (Ex: dhs.gov) or use the -i [file]')
 parser.add_argument('-i', '--infile', help='[OPTIONAL] Input file for all content. Just a list of domains (Ex. dhs.gov)')
 parser.add_argument('-o', '--outfile', help='[OPTIONAL] Output file for all content')
-parser.add_argument('-w', '--whois', help='[OPTIONAL] For each domain retrieved from ViewDNS.info, do a whois [domain]')
+parser.add_argument('-w', '--whois', action="store_true", help='[OPTIONAL] For each domain retrieved from ViewDNS.info, do a whois [domain]. Default is not to do this.')
 args = parser.parse_args()
 
 def DomainVerification(passed_domain):
@@ -110,7 +110,10 @@ def GetDataFromViewDNS(passed_domain):
         exit(1)
 
 def IndividualWhoisLookups(domains):
-    for line in data:
+    print '[ ] Starting individual domain lookups in 5 seconds'
+    print '[*]    If the output "hangs" on a lookup, press CTRL-C to go to next entry'
+    sleep(5)
+    for line in domains:
         line = re.sub('</td>', '', line)
         domains = line.split('<td>')
 
@@ -118,7 +121,7 @@ def IndividualWhoisLookups(domains):
         try:
             w = pythonwhois.get_whois(domains[1], normalized=True)
 
-            print "------------------------------------------------------------\n"
+            print '------------------------------------------------------------'
             print '"%s","%s","%s"\n' % (domains[1],domains[2],domains[3])
 
             # Look for false positives in web output by doing search of whois results
@@ -146,7 +149,7 @@ def IndividualWhoisLookups(domains):
 
                 # Output to outfile
                 if args.outfile:
-                    outfile.write("------------------------------------------------------------\n")
+                    outfile.write('------------------------------------------------------------')
                     outfile.write('"%s","%s","%s"\n' % (domains[1], domains[2], domains[3]))
                     pprint.pprint(w, stream=outfile, indent=4)
 
@@ -158,9 +161,9 @@ def IndividualWhoisLookups(domains):
             pass
 
 def OutputScrapedDomsFromViewDNS(domain, responses):
-    print "[+] Domain Searched: %s" % domain
+    print "[+] Domain Searched (first 500 responses): %s" % domain
     if args.outfile:
-        outfile.write("[+] Domain Searched: %s\n" % domain)
+        outfile.write("[+] Domain Searched (first 500 responses): %s\n" % domain)
         outfile.write('"Domain","Date Creation","Registrar"\n')
     for domain in responses:
         domain = re.sub('</td>', '', domain)
