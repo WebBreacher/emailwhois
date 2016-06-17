@@ -12,7 +12,6 @@ import argparse
 from datetime import date
 import pprint
 import pythonwhois # http://cryto.net/pythonwhois/index.html
-import random
 import re
 import sys
 import time
@@ -40,7 +39,6 @@ def DomainVerification(passed_domain):
     else:
         return False
 
-
 def GetDataFromViewDNS(passed_domain):
     ####
     # Setting up and Making the Web Call
@@ -48,23 +46,19 @@ def GetDataFromViewDNS(passed_domain):
     try:
         url = 'http://pro.viewdns.info/reversewhois/?q=%s&apikey=%s&output=json' % (passed_domain, args.api)
         req = urllib2.Request(url)
-        response = urllib2.urlopen(req, timeout=15)
+        response = urllib2.urlopen(req, timeout=20)
         resp_data = response.read()
         print '[+] Response from ViewDNS.info received'
 
         # Matching and Extracting Content
-        number = re.findall('There are [0-9,]+ domains', resp_data)
-        print '[*] ' + number[0] + '.'
-        if re.findall('The first 500 of these', resp_data):
-            print '[*]   WARNING: Only the first 500 results will be retrieved/processed.'
-            if args.outfile:
-                outfile.write('[*]   WARNING: Only the first 500 results will be retrieved/processed.')
-
-        # Format of the viewdns.info data as of 2016-06-10
-        '''<tr><td>aberdeenweb.net</td><td>2008-07-17</td><td>FASTDOMAIN, INC.</td></tr>'''
-        print '[ ] Parsing the response'
-        data = re.findall(r"<td>[a-z0-9].+?\..+?</td><td>[0-9\-]+?</td><td>[A-Z0-9].+?</td>", resp_data)
-        return data
+        pprint.pprint(resp_data)
+        exit()
+        print '[+] %s Domains found.' % resp_data['response']['result_count'])
+        if resp_data['response']['total_pages'] > 1:
+            # For now return first 500. TODO - parse each page to get all
+            return resp_data['response']['matches']
+        else:
+            return resp_data['response']['matches']
 
     except Exception:
         print '[!]   ERROR - Cannot reach or parse data from the viewdns.info site.'
@@ -75,27 +69,24 @@ def IndividualWhoisLookups(domains):
     print '[*]    If the output "hangs" on a lookup, press CTRL-C to go to next entry'
     time.sleep(10)
     for line in domains:
-        line = re.sub('</td>', '', line)
-        domains = line.split('<td>')
-
         # Make a whois lookup of the domain and pull out the email@dhs.gov
         try:
-            w = pythonwhois.get_whois(domains[1], normalized=True)
+            w = pythonwhois.get_whois(line['domain'], normalized=True)
 
             print '------------------------------------------------------------'
-            print '"%s","%s","%s"\n' % (domains[1],domains[2],domains[3])
+            print '"%s","%s","%s"\n' % (line['domain'],line['created_date'],line['registrar'])
 
             # Look for false positives in web output by doing search of whois results
             if re.match('NOT FOUND', w['raw'][0]):
                 # Some 'found' content fails specific whois. This is a false positive.
-                print '[!]   ERROR: No valid Whois data for %s' % domains[1]
-                outfile.write('[!]   ERROR: No valid Whois data for %s' % domains[1])
+                print '[!]   ERROR: No valid Whois data for %s' % line['domain']
+                outfile.write('[!]   ERROR: No valid Whois data for %s' % line['domain'])
                 continue
 
             elif not re.findall(args.domain, w['raw'][0], flags=re.IGNORECASE) and not re.findall(args.domain, w['raw'][1], flags=re.IGNORECASE):
                 # Is the search domain actually in any of the output?
-                print '[!]   ERROR: %s not found in %s' % (args.domain, domains[1])
-                outfile.write('[!]   ERROR: %s not found in %s' % (args.domain, domains[1]))
+                print '[!]   ERROR: %s not found in %s' % (args.domain, line['domain'])
+                outfile.write('[!]   ERROR: %s not found in %s' % (args.domain, line['domain']))
                 continue
 
             elif re.search('No match for ', w['raw'][0], flags=re.IGNORECASE):
@@ -112,7 +103,7 @@ def IndividualWhoisLookups(domains):
                 # Output to outfile
                 if args.outfile:
                     outfile.write('------------------------------------------------------------\n')
-                    outfile.write('Domain: %s, Registered on: %s, Registrar: %s\n' % (domains[1], domains[2], domains[3]))
+                    outfile.write('Domain: %s, Registered on: %s, Registrar: %s\n' % (line['domain'],line['created_date'],line['registrar'])
                     pprint.pprint(w, stream=outfile, indent=4)
 
         except KeyboardInterrupt:
@@ -123,16 +114,14 @@ def IndividualWhoisLookups(domains):
             pass
 
 def OutputScrapedDomsFromViewDNS(domain, responses):
-    print "[+] Domain Searched (first 500 responses): %s" % domain
+    print "[+] Domain Searched: %s" % domain
     if args.outfile:
-        outfile.write("[+] Domain Searched (first 500 responses): %s\n" % domain)
+        outfile.write("[+] Domain Searched: %s\n" % domain)
         outfile.write('"Domain","Date Creation","Registrar"\n')
     for domain in responses:
-        domain = re.sub('</td>', '', domain)
-        domains = domain.split('<td>')
-        print '"%s","%s","%s"' % (domains[1], domains[2], domains[3])
+        print '"%s","%s","%s"' % (line['domain'],line['created_date'],line['registrar'])
         if args.outfile:
-            outfile.write('"%s","%s","%s"\n' % (domains[1], domains[2], domains[3]))
+            outfile.write('"%s","%s","%s"\n' % (line['domain'],line['created_date'],line['registrar']))
 
 ####
 # Main Script
