@@ -57,9 +57,9 @@ def GetDataFromViewDNS(passed_domain):
         print '[+] %s Domains found.' % resp_data['response']['result_count']
         if resp_data['response']['total_pages'] > 1:
             # For now return first 500. TODO - parse each page to get all
-            return resp_data['response']['matches']
+            return resp_data['response']
         else:
-            return resp_data['response']['matches']
+            return resp_data['response']
 
     except Exception, e:
         print '[!]   ERROR - ViewDNS issue: %s' % str(e)
@@ -118,7 +118,7 @@ def OutputScrapedDomsFromViewDNS(domain, responses):
     print "[+] Domain Searched: %s" % domain
     if args.outfile:
         outfile.write("[+] Domain Searched: %s\n" % domain)
-        outfile.write("[+] %s Domains found.\n" % resp_data['response']['result_count'])
+        outfile.write("[+] %s Domains found.\n" % responses['response']['result_count'])
         outfile.write('"Domain","Date Creation","Registrar"\n')
     for line in responses:
         print '"%s","%s","%s"' % (line['domain'],line['created_date'],line['registrar'])
@@ -145,7 +145,7 @@ if args.domain:
         exit(1)
 
     # OK, we have a single domain. Let's make sure it IS a domain
-    print '[+] Trying %s' % args.domain
+    print '\n[+] Trying %s' % args.domain
 
     if DomainVerification(args.domain):
         print '[ ] Validated that %s looks like a domain. Well done.' % args.domain
