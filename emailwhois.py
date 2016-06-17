@@ -10,6 +10,7 @@
 # Tell python we want to use a library
 import argparse
 from datetime import date
+import json
 import pprint
 import pythonwhois # http://cryto.net/pythonwhois/index.html
 import re
@@ -51,7 +52,7 @@ def GetDataFromViewDNS(passed_domain):
         print '[+] Response from ViewDNS.info received'
 
         # Matching and Extracting Content
-        #pp.pprint(resp_data) #DEBUG
+        print json.dumps(resp_data, indent=4) #DEBUG
 
         print '[+] %s Domains found.' % resp_data['response']['result_count']
         if resp_data['response']['total_pages'] > 1:
