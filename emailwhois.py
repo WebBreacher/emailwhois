@@ -103,7 +103,7 @@ def IndividualWhoisLookups(domains):
                 # Output to outfile
                 if args.outfile:
                     outfile.write('------------------------------------------------------------\n')
-                    outfile.write('Domain: %s, Registered on: %s, Registrar: %s\n' % (line['domain'],line['created_date'],line['registrar'])
+                    outfile.write('Domain: %s, Registered on: %s, Registrar: %s\n' % (line['domain'],line['created_date'],line['registrar']))
                     pp.pprint(w, stream=outfile, indent=4)
 
         except KeyboardInterrupt:
