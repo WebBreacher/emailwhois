@@ -52,7 +52,7 @@ def GetDataFromViewDNS(passed_domain):
         print '[+] Response from ViewDNS.info received'
 
         # Matching and Extracting Content
-        print json.dump(resp_data, indent=4) #DEBUG
+        #print json.dumps(resp_data, indent=4) #DEBUG
 
         print '[+] %s Domains found.' % resp_data['response']['result_count']
         if resp_data['response']['total_pages'] > 1:
