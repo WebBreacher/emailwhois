@@ -48,11 +48,11 @@ def GetDataFromViewDNS(passed_domain):
         url = 'http://pro.viewdns.info/reversewhois/?q=%s&apikey=%s&output=json' % (passed_domain, args.api)
         req = urllib2.Request(url)
         response = urllib2.urlopen(req, timeout=20)
-        resp_data = response.read()
+        resp_data = json.load(response)
         print '[+] Response from ViewDNS.info received'
 
         # Matching and Extracting Content
-        print json.dumps(resp_data, indent=4) #DEBUG
+        print json.dump(resp_data, indent=4) #DEBUG
 
         print '[+] %s Domains found.' % resp_data['response']['result_count']
         if resp_data['response']['total_pages'] > 1:
@@ -118,8 +118,9 @@ def OutputScrapedDomsFromViewDNS(domain, responses):
     print "[+] Domain Searched: %s" % domain
     if args.outfile:
         outfile.write("[+] Domain Searched: %s\n" % domain)
+        outfile.write("[+] %s Domains found.\n" % resp_data['response']['result_count'])
         outfile.write('"Domain","Date Creation","Registrar"\n')
-    for domain in responses:
+    for line in responses:
         print '"%s","%s","%s"' % (line['domain'],line['created_date'],line['registrar'])
         if args.outfile:
             outfile.write('"%s","%s","%s"\n' % (line['domain'],line['created_date'],line['registrar']))
