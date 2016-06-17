@@ -61,8 +61,8 @@ def GetDataFromViewDNS(passed_domain):
         else:
             return resp_data['response']['matches']
 
-    except Exception:
-        print '[!]   ERROR - Cannot reach or parse data from the viewdns.info site.'
+    except Exception, e:
+        print '[!]   ERROR - ViewDNS issue: %s' % str(e)
         exit(1)
 
 def IndividualWhoisLookups(domains):
@@ -111,8 +111,8 @@ def IndividualWhoisLookups(domains):
             # Sense and continue if user presses ctrl-c (used for times the script gets...er...stuck)
             continue
 
-        except Exception:
-            pass
+        except Exception, e:
+            print '[!]   ERROR: Exception caught: %s' % str(e)
 
 def OutputScrapedDomsFromViewDNS(domain, responses):
     print "[+] Domain Searched: %s" % domain
@@ -133,8 +133,8 @@ def OutputScrapedDomsFromViewDNS(domain, responses):
 if args.outfile:
     try:
         outfile = open(args.outfile, 'a', 0)
-    except Exception:
-        print '[!]   ERROR: Problem with the outfile.'
+    except Exception, e:
+        print '[!]   ERROR: Problem with the outfile: %s' % str(e)
         exit(1)
 
 # Main part of the script
@@ -167,8 +167,8 @@ elif args.infile:
     try:
         infile = open(args.infile, 'r')
         infile_lines = infile.readlines()
-    except Exception:
-        print '[!]   ERROR: Problem with the infile.'
+    except Exception, e:
+        print '[!]   ERROR: Problem with the infile: %s' % str(e)
         exit(1)
 
     for line in infile_lines:
