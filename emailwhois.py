@@ -53,7 +53,7 @@ def GetDataFromViewDNS(passed_domain):
         # Matching and Extracting Content
         pprint.pprint(resp_data)
         exit()
-        print '[+] %s Domains found.' % resp_data['response']['result_count'])
+        print '[+] %s Domains found.' % resp_data['response']['result_count']
         if resp_data['response']['total_pages'] > 1:
             # For now return first 500. TODO - parse each page to get all
             return resp_data['response']['matches']
