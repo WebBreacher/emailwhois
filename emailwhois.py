@@ -118,9 +118,9 @@ def OutputScrapedDomsFromViewDNS(domain, responses):
     print "[+] Domain Searched: %s" % domain
     if args.outfile:
         outfile.write("[+] Domain Searched: %s\n" % domain)
-        outfile.write("[+] %s Domains found.\n" % responses['response']['result_count'])
+        outfile.write("[+] %s Domains found.\n" % responses['result_count'])
         outfile.write('"Domain","Date Creation","Registrar"\n')
-    for line in responses:
+    for line in responses['matches']:
         print '"%s","%s","%s"' % (line['domain'],line['created_date'],line['registrar'])
         if args.outfile:
             outfile.write('"%s","%s","%s"\n' % (line['domain'],line['created_date'],line['registrar']))
