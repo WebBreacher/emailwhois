@@ -97,9 +97,15 @@ def GetDataFromViewDNS(passed_domain):
         response = urllib2.urlopen(req, timeout=15)
         resp_data = response.read()
         print '[+] Response from ViewDNS.info received'
-        ####
+
         # Matching and Extracting Content
-        ####
+        number = re.findall('There are [0-9,]+ domains', resp_data)
+        print '[*] ' + number[0] + '.'
+        if re.findall('The first 500 of these', resp_data):
+            print '[*]   WARNING: Only the first 500 results will be retrieved/processed.'
+            if args.outfile:
+                outfile.write('[*]   WARNING: Only the first 500 results will be retrieved/processed.')
+
         # Format of the viewdns.info data as of 2016-06-10
         '''<tr><td>aberdeenweb.net</td><td>2008-07-17</td><td>FASTDOMAIN, INC.</td></tr>'''
         print '[ ] Parsing the response'
