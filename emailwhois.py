@@ -51,8 +51,8 @@ def GetDataFromViewDNS(passed_domain):
         print '[+] Response from ViewDNS.info received'
 
         # Matching and Extracting Content
-        pprint.pprint(resp_data)
-        exit()
+        pp.pprint(resp_data) #DEBUG
+
         print '[+] %s Domains found.' % resp_data['response']['result_count']
         if resp_data['response']['total_pages'] > 1:
             # For now return first 500. TODO - parse each page to get all
@@ -104,7 +104,7 @@ def IndividualWhoisLookups(domains):
                 if args.outfile:
                     outfile.write('------------------------------------------------------------\n')
                     outfile.write('Domain: %s, Registered on: %s, Registrar: %s\n' % (line['domain'],line['created_date'],line['registrar'])
-                    pprint.pprint(w, stream=outfile, indent=4)
+                    pp.pprint(w, stream=outfile, indent=4)
 
         except KeyboardInterrupt:
             # Sense and continue if user presses ctrl-c (used for times the script gets...er...stuck)
