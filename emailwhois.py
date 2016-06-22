@@ -61,15 +61,15 @@ def GetDataFromViewDNS(passed_domain):
         exit(1)
 
 def IndividualWhoisLookups(domains):
-    print '[ ] Starting individual domain lookups in 10 seconds'
+    print '[ ] Starting individual domain lookups in 5 seconds'
     print '[*]    If the output "hangs" on a lookup, press CTRL-C to go to next entry'
-    time.sleep(10)
+    time.sleep(5)
 
-    for line in domains:
+    for line in domains['matches']:
         # Make a whois lookup of the domain
         try:
             w = pythonwhois.get_whois(line['domain'], normalized=True)
-
+            
             print '------------------------------------------------------------'
             print '"%s","%s","%s"\n' % (line['domain'],line['created_date'],line['registrar'])
 

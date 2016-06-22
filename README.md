@@ -23,9 +23,7 @@ optional arguments:
                         do this.
 ```
 
-# Issues
-1. Only the first 500 domains are retrieved. This is a limit of the viewdns.info site, not my script.
-2. I think viewdns.info may be blocking/shunning IPs after a certain number of repeated lookups. Beware.
-3. The OUTFILE format without the -w (extra whois) option is CSV-compliant and easy to copy/import into other tools (Excel, Maltego...).
-4. The -w (whois) option may hang for long periods when looking up certain domains. Press CTRL-C to skip that "problem domain" and move to the next.
-5. If you need to stop the script (especially during the long -w function), press CTRL-Z to send to the background. Then look at the ```[1]+ Stopped``` output and type ```kill %1```. I've used a "1" here but in your system, it may be a 2 or 3 or something else. Look for the number inside the "[ ]" and ```kill %``` that.
+# Notes
+1. The OUTFILE format without the -w (extra whois) option is CSV-compliant and easy to copy/import into other tools (Excel, Maltego...).
+2. The -w (whois) option may hang for long periods when looking up certain domains. Press CTRL-C to skip that "problem domain" and move to the next.
+3. If you need to stop the script (especially during the long -w function), press CTRL-Z to send to the background. Then look at the ```[1]+ Stopped``` output and type ```kill %1```. I've used a "1" here but in your system, it may be a 2 or 3 or something else. Look for the number inside the "[ ]" and ```kill %``` that.
