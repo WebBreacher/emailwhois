@@ -69,7 +69,7 @@ def IndividualWhoisLookups(domains):
         # Make a whois lookup of the domain
         try:
             w = pythonwhois.get_whois(line['domain'], normalized=True)
-            
+
             print '------------------------------------------------------------'
             print '"%s","%s","%s"\n' % (line['domain'],line['created_date'],line['registrar'])
 
@@ -77,19 +77,22 @@ def IndividualWhoisLookups(domains):
             if re.match('NOT FOUND', w['raw'][0]):
                 # Some 'found' content fails specific whois. This is a false positive.
                 print '[!]   ERROR: No valid Whois data for %s' % line['domain']
-                outfile.write('[!]   ERROR: No valid Whois data for %s' % line['domain'])
+                if args.outfile:
+                    outfile.write('[!]   ERROR: No valid Whois data for %s' % line['domain'])
                 continue
 
             elif not re.findall(args.domain, w['raw'][0], flags=re.IGNORECASE) and not re.findall(args.domain, w['raw'][1], flags=re.IGNORECASE):
                 # Is the search domain actually in any of the output?
                 print '[!]   ERROR: %s not found in %s' % (args.domain, line['domain'])
-                outfile.write('[!]   ERROR: %s not found in %s' % (args.domain, line['domain']))
+                if args.outfile:
+                    outfile.write('[!]   ERROR: %s not found in %s' % (args.domain, line['domain']))
                 continue
 
             elif re.search('No match for ', w['raw'][0], flags=re.IGNORECASE):
                 # The Whois failed
                 print '[!]   ERROR: %s no match in Whois' % args.domain
-                outfile.write('[!]   ERROR: %s no match in Whois' % args.domain)
+                if args.outfile:
+                    outfile.write('[!]   ERROR: %s no match in Whois' % args.domain)
                 continue
 
             else:
