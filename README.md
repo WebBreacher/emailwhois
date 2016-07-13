@@ -1,15 +1,18 @@
 # emailwhois
-Look up an email domain (@example.com), using Python, across all known domains using the web site http://viewdns.info/reversewhois/?q=%40dhs.gov
+Look up an email domain (@example.com), using Python, across all known domains using the API at web site http://viewdns.info/reversewhois/?q=%40example.com.
+
+*This script does require an API to ViewDNS.info. They will ban your IP if you scrape their web pages.*
 
 # Sample Help
 ```
-$  python ./emailwhois.py -h
-usage: emailwhois.py [-h] [-d DOMAIN] [-i INFILE] [-o OUTFILE] [-w]
+$  python emailwhois.py -h
+usage: emailwhois.py [-h] -a API [-d DOMAIN] [-i INFILE] [-o OUTFILE] [-w]
 
 To look up an email wildcard and find all domains reg'd with it
 
 optional arguments:
   -h, --help            show this help message and exit
+  -a API, --api API     REQUIRED API to ViewDNS.info
   -d DOMAIN, --domain DOMAIN
                         Single domain to search for (Ex: dhs.gov) or use the
                         -i [file]
@@ -21,6 +24,7 @@ optional arguments:
   -w, --whois           [OPTIONAL] For each domain retrieved from
                         ViewDNS.info, do a whois [domain]. Default is not to
                         do this.
+
 ```
 
 # Issues
