@@ -1,22 +1,21 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
+
 '''
     Author: Micah Hoffman (@WebBreacher)
     Purpose: To look up an email wildcard and find all domains reg'd with it
-
     TODO -
         1 - Parse the number of responses from the site. If > 500 get other pages
 '''
 
-# Tell python we want to use a library
 import argparse
 from datetime import date
 import json
 import pprint
-import pythonwhois # http://cryto.net/pythonwhois/index.html
 import re
 import sys
 import time
-import urllib2
+import urllib.request as urllib2
+import pythonwhois
 
 ####
 # Variables
@@ -33,151 +32,127 @@ parser.add_argument('-w', '--whois', action='store_true', help='[OPTIONAL] For e
 args = parser.parse_args()
 
 def DomainVerification(passed_domain):
-    # Use some kind of regex to verify a domain
-    # Regex copied from https://www.safaribooksonline.com/library/view/regular-expressions-cookbook/9781449327453/ch08s15.html
     if re.match('((?=[a-z0-9-]{1,63}\.)[a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,63}', passed_domain):
         return True
     else:
         return False
 
 def GetDataFromViewDNS(passed_domain):
-    # Setting up and Making the Web Call
     try:
-        url = 'http://pro.viewdns.info/reversewhois/?q=%s&apikey=%s&output=json' % (passed_domain, args.api)
+        url = f'http://pro.viewdns.info/reversewhois/?q={passed_domain}&apikey={args.api}&output=json'
         req = urllib2.Request(url)
-        response = urllib2.urlopen(req, timeout=20)
-        resp_data = json.load(response)
-        print '[+] Response from ViewDNS.info received'
+        with urllib2.urlopen(req, timeout=20) as response:
+            resp_data = json.load(response)
+        print('[+] Response from ViewDNS.info received')
 
-        print '[+] %s Domains found.' % resp_data['response']['result_count']
+        print(f'[+] {resp_data["response"]["result_count"]} Domains found.')
         if resp_data['response']['total_pages'] > 1:
-            # For now return first 500. TODO - parse each page to get all
             return resp_data['response']
         else:
             return resp_data['response']
 
-    except Exception, e:
-        print '[!]   ERROR - ViewDNS issue: %s' % str(e)
+    except Exception as e:
+        print(f'[!]   ERROR - ViewDNS issue: {e}')
         exit(1)
 
 def IndividualWhoisLookups(domains):
-    print '[ ] Starting individual domain lookups in 10 seconds'
-    print '[*]    If the output "hangs" on a lookup, press CTRL-C to go to next entry'
+    print('[ ] Starting individual domain lookups in 10 seconds')
+    print('[*]    If the output "hangs" on a lookup, press CTRL-C to go to next entry')
     time.sleep(10)
 
     for line in domains:
-        # Make a whois lookup of the domain
         try:
             w = pythonwhois.get_whois(line['domain'], normalized=True)
 
-            print '------------------------------------------------------------'
-            print '"%s","%s","%s"\n' % (line['domain'],line['created_date'],line['registrar'])
+            print('------------------------------------------------------------')
+            print(f'"{line["domain"]}","{line["created_date"]}","{line["registrar"]}"\n')
 
-            # Look for false positives in web output by doing search of whois results
             if re.match('NOT FOUND', w['raw'][0]):
-                # Some 'found' content fails specific whois. This is a false positive.
-                print '[!]   ERROR: No valid Whois data for %s' % line['domain']
-                outfile.write('[!]   ERROR: No valid Whois data for %s' % line['domain'])
+                print(f'[!]   ERROR: No valid Whois data for {line["domain"]}')
+                outfile.write(f'[!]   ERROR: No valid Whois data for {line["domain"]}')
                 continue
 
             elif not re.findall(args.domain, w['raw'][0], flags=re.IGNORECASE) and not re.findall(args.domain, w['raw'][1], flags=re.IGNORECASE):
-                # Is the search domain actually in any of the output?
-                print '[!]   ERROR: %s not found in %s' % (args.domain, line['domain'])
-                outfile.write('[!]   ERROR: %s not found in %s' % (args.domain, line['domain']))
+                print(f'[!]   ERROR: {args.domain} not found in {line["domain"]}')
+                outfile.write(f'[!]   ERROR: {args.domain} not found in {line["domain"]}')
                 continue
 
             elif re.search('No match for ', w['raw'][0], flags=re.IGNORECASE):
-                # The Whois failed
-                print '[!]   ERROR: %s no match in Whois' % args.domain
-                outfile.write('[!]   ERROR: %s no match in Whois' % args.domain)
+                print(f'[!]   ERROR: {args.domain} no match in Whois')
+                outfile.write(f'[!]   ERROR: {args.domain} no match in Whois')
                 continue
 
             else:
-                # Print all the things except the "raw" element
                 del w['raw']
                 pp.pprint(w)
 
-                # Output to outfile
                 if args.outfile:
                     outfile.write('------------------------------------------------------------\n')
-                    outfile.write('Domain: %s, Registered on: %s, Registrar: %s\n' % (line['domain'],line['created_date'],line['registrar']))
+                    outfile.write(f'Domain: {line["domain"]}, Registered on: {line["created_date"]}, Registrar: {line["registrar"]}\n')
                     pp.pprint(w, stream=outfile, indent=4)
 
         except KeyboardInterrupt:
-            # Sense and continue if user presses ctrl-c (used for times the script gets...er...stuck)
             continue
 
-        except Exception, e:
-            print '[!]   ERROR: Exception caught: %s' % str(e)
+        except Exception as e:
+            print(f'[!]   ERROR: Exception caught: {e}')
 
 def OutputScrapedDomsFromViewDNS(domain, responses):
-    print "[+] Domain Searched: %s" % domain
+    print(f"[+] Domain Searched: {domain}")
     if args.outfile:
-        outfile.write("[+] Domain Searched: %s\n" % domain)
-        outfile.write("[+] %s Domains found.\n" % responses['result_count'])
+        outfile.write(f"[+] Domain Searched: {domain}\n")
+        outfile.write(f"[+] {responses['result_count']} Domains found.\n")
         outfile.write('"Domain","Date Creation","Registrar"\n')
     for line in responses['matches']:
-        print '"%s","%s","%s"' % (line['domain'],line['created_date'],line['registrar'])
+        print(f'"{line["domain"]}","{line["created_date"]}","{line["registrar"]}"')
         if args.outfile:
-            outfile.write('"%s","%s","%s"\n' % (line['domain'],line['created_date'],line['registrar']))
+            outfile.write(f'"{line["domain"]}","{line["created_date"]}","{line["registrar"]}"\n')
 
 def RunIt(domain):
-    # OK, we have a single domain. Let's make sure it IS a domain
-    print '\n[+] Trying %s' % domain
+    print(f'\n[+] Trying {domain}')
 
     if DomainVerification(domain):
-        print '[ ] Validated that %s looks like a domain. Well done.' % domain
+        print(f'[ ] Validated that {domain} looks like a domain. Well done.')
         resp_data = GetDataFromViewDNS(domain)
 
         if args.whois:
-            # Do the whois lookup and then output
-            print '[ ] Doing the additional WHOIS look ups on the found domains per the -w switch'
+            print('[ ] Doing the additional WHOIS look ups on the found domains per the -w switch')
             IndividualWhoisLookups(resp_data)
         else:
-            # Just output the scraped domains
             OutputScrapedDomsFromViewDNS(domain, resp_data)
     else:
-        print '[!]   ERROR: The value you passed (%s) did not validate as a domain.' % domain
+        print(f'[!]   ERROR: The value you passed ({domain}) did not validate as a domain.')
         exit(1)
 
 ####
 # Main Script
 ####
-# Open file for writing output
 if args.outfile:
     try:
-        outfile = open(args.outfile, 'a', 0)
-    except Exception, e:
-        print '[!]   ERROR: Problem with the outfile: %s' % str(e)
+        outfile = open(args.outfile, 'a', buffering=1) # Use line buffering (buffering=1)
+    except Exception as e:
+        print(f'[!]   ERROR: Problem with the outfile: {e}')
         exit(1)
 
-# Main part of the script
 if args.domain:
     if args.infile:
-        # If they passed both -d and -i, exit.
-        print '[!]   ERROR: Please only pass -d OR -i...not both.'
+        print('[!]   ERROR: Please only pass -d OR -i...not both.')
         exit(1)
 
     RunIt(args.domain)
 
 elif args.infile:
-    # Open file for reading input
     try:
-        infile = open(args.infile, 'r')
-        infile_lines = infile.readlines()
-    except Exception, e:
-        print '[!]   ERROR: Problem with the infile: %s' % str(e)
+        with open(args.infile, 'r') as infile:
+            for domain in infile:
+                domain = domain.strip()
+                RunIt(domain)
+    except Exception as e:
+        print(f'[!]   ERROR: Problem with the infile: {e}')
         exit(1)
 
-    for domain in infile_lines:
-        domain = domain.strip()
-
-        RunIt(domain)
-
-    infile.close()
-
 else:
-    print '[!]   ERROR: You need to either use -d or -i to pass in domains.'
+    print('[!]   ERROR: You need to either use -d or -i to pass in domains.')
     exit(1)
 
 if args.outfile:
